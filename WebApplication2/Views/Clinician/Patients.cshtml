@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Patient Records";
+}
+
+<div class="container mt-4">
+    <h2>Patient Records</h2>
+    <p class="text-muted">List of patients under your supervision.</p>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Condition</th>
+                <th>Last Check</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>101</td><td>John Doe</td><td>Foot Ulcer</td><td>2 hours ago</td><td><span class="text-success">Stable</span></td></tr>
+            <tr><td>102</td><td>Mary Smith</td><td>Pressure Sores</td><td>6 hours ago</td><td><span class="text-danger">Alert</span></td></tr>
+            <tr><td>103</td><td>Alex Johnson</td><td>Diabetic Foot</td><td>1 day ago</td><td><span class="text-warning">Monitor</span></td></tr>
+        </tbody>
+    </table>
+</div>

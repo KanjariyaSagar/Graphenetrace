@@ -1,0 +1,47 @@
+﻿@{
+    ViewData["Title"] = "Clinician Dashboard";
+}
+<div class="container mt-4">
+    <h2 class="mb-3">Clinician Dashboard</h2>
+    <p class="text-muted">Welcome back. Choose a section from the navbar.</p>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Metrics</h5>
+                    <p class="card-text">View pressure metrics and trends.</p>
+                    <a asp-controller="Clinician" asp-action="Metrics" class="btn btn-primary btn-sm">Open</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Patients</h5>
+                    <p class="card-text">Browse patient list and records.</p>
+                    <a asp-controller="Clinician" asp-action="Patients" class="btn btn-primary btn-sm">Open</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Alerts</h5>
+                    <p class="card-text">See recent alerts.</p>
+                    <a asp-controller="Clinician" asp-action="Alerts" class="btn btn-primary btn-sm">Open</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Comments</h5>
+                    <p class="card-text">Review and reply to comments.</p>
+                    <a asp-controller="Clinician" asp-action="Comments" class="btn btn-primary btn-sm">Open</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
