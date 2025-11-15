@@ -15,7 +15,13 @@ namespace WebApplication2.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            
+                if (User?.Identity?.IsAuthenticated == true)
+                    return RedirectToAction("Index", "Clinician");
+
+                return View(); // show the welcome page for guests
+
+            
         }
 
         public IActionResult Privacy()
