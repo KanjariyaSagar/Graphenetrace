@@ -1,0 +1,21 @@
+﻿@model WebApplication2.Models.ViewModels.KpiCardVM
+
+<div class="card shadow-sm h-100">
+    <div class="card-body d-flex flex-column justify-content-between">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <div class="text-muted small text-uppercase">@Model.Title</div>
+                <div class="fs-4 fw-semibold">@Model.Value</div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.BadgeCss))
+            {
+                <span class="@Model.BadgeCss">@Model.BadgeText</span>
+            }
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Hint))
+        {
+            <div class="mt-2 small text-muted">@Model.Hint</div>
+        }
+    </div>
+</div>

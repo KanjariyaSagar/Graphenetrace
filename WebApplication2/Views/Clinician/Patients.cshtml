@@ -1,25 +1,122 @@
-﻿@{
+﻿@model WebApplication2.Models.ViewModels.ClinicianPatientsVM
+
+@{
     ViewData["Title"] = "Patient Records";
 }
 
-<div class="container mt-4">
-    <h2>Patient Records</h2>
-    <p class="text-muted">List of patients under your supervision.</p>
+<h2 class="mb-3">Patient Records</h2>
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Condition</th>
-                <th>Last Check</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td>101</td><td>John Doe</td><td>Foot Ulcer</td><td>2 hours ago</td><td><span class="text-success">Stable</span></td></tr>
-            <tr><td>102</td><td>Mary Smith</td><td>Pressure Sores</td><td>6 hours ago</td><td><span class="text-danger">Alert</span></td></tr>
-            <tr><td>103</td><td>Alex Johnson</td><td>Diabetic Foot</td><td>1 day ago</td><td><span class="text-warning">Monitor</span></td></tr>
-        </tbody>
-    </table>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0 text-muted">
+        List of patients under your supervision.
+    </p>
+
+    <form method="get" class="d-flex">
+        <input type="text"
+               name="search"
+               value="@Model.Search"
+               class="form-control form-control-sm me-2"
+               placeholder="Search by name, ID, or condition" />
+        <button type="submit" class="btn btn-outline-secondary btn-sm">Search</button>
+    </form>
 </div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <span class="me-2">Sort by last check:</span>
+        <a class="btn btn-sm @(Model.Sort == "newest" ? "btn-primary" : "btn-outline-secondary")"
+           href="@Url.Action("Patients", new { sort = "newest", status = Model.StatusFilter, search = Model.Search })">
+            Newest first
+        </a>
+        <a class="btn btn-sm @(Model.Sort == "oldest" ? "btn-primary" : "btn-outline-secondary") ms-1"
+           href="@Url.Action("Patients", new { sort = "oldest", status = Model.StatusFilter, search = Model.Search })">
+            Oldest first
+        </a>
+    </div>
+
+    <div>
+        <span class="me-2">Show:</span>
+        <a class="btn btn-sm @(Model.StatusFilter == "All" ? "btn-primary" : "btn-outline-secondary")"
+           href="@Url.Action("Patients", new { sort = Model.Sort, status = "All", search = Model.Search })">
+            All
+        </a>
+        <a class="btn btn-sm @(Model.StatusFilter == "Stable" ? "btn-primary" : "btn-outline-secondary") ms-1"
+           href="@Url.Action("Patients", new { sort = Model.Sort, status = "Stable", search = Model.Search })">
+            Stable
+        </a>
+        <a class="btn btn-sm @(Model.StatusFilter == "Monitor" ? "btn-primary" : "btn-outline-secondary") ms-1"
+           href="@Url.Action("Patients", new { sort = Model.Sort, status = "Monitor", search = Model.Search })">
+            Monitor
+        </a>
+        <a class="btn btn-sm @(Model.StatusFilter == "Alert" ? "btn-primary" : "btn-outline-secondary") ms-1"
+           href="@Url.Action("Patients", new { sort = Model.Sort, status = "Alert", search = Model.Search })">
+            Alert
+        </a>
+    </div>
+</div>
+
+<table class="table table-striped table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Condition</th>
+            <th>Last Check</th>
+            <th>Status</th>
+            <th>Uploads</th>
+            <th>Assigned</th>
+            <th>Risk</th>
+            <th>Latest metrics</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model.Patients)
+        {
+            <tr>
+                <td>@p.PatientId</td>
+                <td>@p.Name</td>
+                <td>@p.Age</td>
+                <td>@p.Gender</td>
+                <td>@p.Condition</td>
+                <td>@p.LastCheckText</td>
+                <td>
+                    @if (p.Status == "Alert")
+                    {
+                        <span class="badge bg-danger">Alert</span>
+                    }
+                    else if (p.Status == "Monitor")
+                    {
+                        <span class="badge bg-warning text-dark">Monitor</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Stable</span>
+                    }
+                </td>
+                <td>@p.TotalUploads</td>
+                <td>@p.AssignedAt.ToString()</td>
+                <td>
+                    <span class="@p.RiskCss">@p.RiskScore</span>
+                </td>
+                <td>
+                    PPI: @p.LatestPpi<br />
+                    CA: @p.LatestContactAreaPct.ToString("0.0")%
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-outline-primary"
+                       href="@Url.Action("PatientReport", "Clinician", new { id = p.PatientId })">
+                        View report
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Patients.Any())
+{
+    <p class="text-muted">No patients match your filters.</p>
+}

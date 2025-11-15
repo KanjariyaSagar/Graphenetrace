@@ -1,38 +1,284 @@
-﻿@{
+﻿@model WebApplication2.Models.ViewModels.ClinicianMetricsVM
+@using System.Text.Json
+
+@{
     ViewData["Title"] = "Metrics";
 }
 
-<div class="container mt-4">
-    <h2>Metrics</h2>
-    <p class="text-muted">Below are the recent performance metrics and readings.</p>
+<h1 class="mb-2">Metrics</h1>
+<p class="text-muted mb-4">
+    Below are the recent performance metrics and readings.
+</p>
 
-    <div class="card mt-3 shadow-sm">
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form asp-action="Metrics" method="post" class="row g-3 align-items-end">
+            <!-- Metric selector -->
+            <div class="col-12 col-md-3">
+                <label class="form-label fw-semibold">Metric</label>
+                <select asp-for="SelectedMetric" class="form-select">
+                    <option value="PPI">Peak Pressure Index (PPI)</option>
+                    <option value="ContactArea">Contact Area %</option>
+                </select>
+            </div>
+
+            <!-- From -->
+            <div class="col-12 col-md-3">
+                <label class="form-label fw-semibold">From</label>
+                <input asp-for="From" class="form-control" type="date" />
+            </div>
+
+            <!-- To -->
+            <div class="col-12 col-md-3">
+                <label class="form-label fw-semibold">To</label>
+                <input asp-for="To" class="form-control" type="date" />
+            </div>
+
+            <!-- Quick ranges -->
+            <div class="col-12 col-md-3">
+                <label class="form-label fw-semibold d-block">Quick ranges</label>
+                <div class="btn-group btn-group-sm flex-wrap" role="group">
+                    <button type="submit" name="quickRange" value="Today"
+                            class="btn btn-outline-primary @(Model.QuickRange == "Today" ? "active" : "")">
+                        Today
+                    </button>
+                    <button type="submit" name="quickRange" value="7d"
+                            class="btn btn-outline-primary @(Model.QuickRange == "7d" ? "active" : "")">
+                        7 days
+                    </button>
+                    <button type="submit" name="quickRange" value="30d"
+                            class="btn btn-outline-primary @(Model.QuickRange == "30d" ? "active" : "")">
+                        30 days
+                    </button>
+                    <button type="submit" name="quickRange" value="6m"
+                            class="btn btn-outline-primary @(Model.QuickRange == "6m" ? "active" : "")">
+                        6 months
+                    </button>
+                    <button type="submit" name="quickRange" value="1y"
+                            class="btn btn-outline-primary @(Model.QuickRange == "1y" ? "active" : "")">
+                        1 year
+                    </button>
+                    <button type="submit" name="quickRange" value="All"
+                            class="btn btn-outline-secondary @(Model.QuickRange == "All" ? "active" : "")">
+                        All
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary btn-sm mt-2">
+                    Apply filters
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.TimeLabels == null || !Model.TimeLabels.Any())
+{
+    <div class="alert alert-warning">
+        No data in this range.
+    </div>
+}
+else
+{
+    <!-- MAIN LINE CHART -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">
+            @(Model.SelectedMetric == "ContactArea"
+                    ? "Contact Area % trend"
+                    : "Peak Pressure Index trend")
+    </div>
+    <div class="card-body">
+        <canvas id="metricLineChart" style="height:300px"></canvas>
+        <div class="mt-3 text-muted small">
+            <strong>Min:</strong> @Model.MinValue
+            &nbsp;•&nbsp;
+            <strong>Max:</strong> @Model.MaxValue
+            &nbsp;•&nbsp;
+            <strong>Average:</strong> @Model.AvgValue
+        </div>
+    </div>
+</div>
+
+    <!-- SECONDARY LINE CHART (Contact Area %) -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">
+            Contact Area % trend (comparison)
+        </div>
         <div class="card-body">
-            <h5 class="card-title">Pressure Distribution (Last 24 hours)</h5>
-            <canvas id="metricsChart" width="400" height="200"></canvas>
+            <canvas id="contactAreaChart" style="height:260px"></canvas>
         </div>
     </div>
 
+    <!-- BAR CHART FOR DAILY UPLOADS -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">
+            Upload count over time
+        </div>
+        <div class="card-body">
+            <canvas id="uploadBarChart" style="height:260px"></canvas>
+        </div>
+    </div>
+}
+@section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('metricsChart');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['1h', '4h', '8h', '12h', '16h', '20h', '24h'],
-                datasets: [{
-                    label: 'Peak Pressure Index',
-                    data: [20, 25, 18, 30, 22, 28, 24],
-                    borderWidth: 2,
-                    borderColor: 'rgb(54, 162, 235)',
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: true } },
-                scales: { y: { beginAtZero: true } }
+        (function () {
+            // Build arrays from the model (empty arrays if null)
+            const labels   = @Html.Raw(JsonSerializer.Serialize(Model.TimeLabels ?? new List<string>()));
+            const values   = @Html.Raw(JsonSerializer.Serialize(Model.Values ?? new List<decimal>()));
+            const secondary = @Html.Raw(JsonSerializer.Serialize(Model.SecondaryValues ?? new List<decimal>()));
+            const uploads  = @Html.Raw(JsonSerializer.Serialize(Model.UploadCounts ?? new List<int>()));
+
+            // If there is no data, don't draw charts
+            if (!labels || labels.length === 0) {
+                return;
             }
-        });
+
+            // Main metric line chart
+            const ctxLine = document.getElementById('metricLineChart');
+            new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '@(Model.SelectedMetric == "ContactArea" ? "Contact Area %" : "Peak Pressure Index")',
+                        data: values,
+                        tension: 0.35,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        x: { ticks: { maxRotation: 0, autoSkip: true } },
+                        y: { beginAtZero: false }
+                    }
+                }
+            });
+
+            // Secondary Contact Area % line chart
+            const ctxSecondary = document.getElementById('contactAreaChart');
+            new Chart(ctxSecondary, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Contact Area %',
+                        data: secondary,
+                        tension: 0.35,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        x: { ticks: { maxRotation: 0, autoSkip: true } },
+                        y: { beginAtZero: false }
+                    }
+                }
+            });
+
+            // Upload count bar chart
+            const ctxBar = document.getElementById('uploadBarChart');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Uploads',
+                        data: uploads
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        x: { ticks: { maxRotation: 0, autoSkip: true } },
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        })();
     </script>
-</div>
+}
+
+
+            // Main metric line chart
+            const ctxLine = document.getElementById('metricLineChart');
+            new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '@(Model.SelectedMetric == "ContactArea" ? "Contact Area %" : "Peak Pressure Index")',
+                        data: values,
+                        tension: 0.35,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        x: { ticks: { maxRotation: 0, autoSkip: true } },
+                        y: { beginAtZero: false }
+                    }
+                }
+            });
+
+            // Secondary Contact Area % line chart
+            const ctxSecondary = document.getElementById('contactAreaChart');
+            new Chart(ctxSecondary, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Contact Area %',
+                        data: secondary,
+                        tension: 0.35,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        x: { ticks: { maxRotation: 0, autoSkip: true } },
+                        y: { beginAtZero: false }
+                    }
+                }
+            });
+
+            // Upload count bar chart
+            const ctxBar = document.getElementById('uploadBarChart');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Uploads',
+                        data: uploads
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        x: { ticks: { maxRotation: 0, autoSkip: true } },
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        })();
+    </script>
+}
