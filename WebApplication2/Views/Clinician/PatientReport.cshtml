@@ -1,149 +1,165 @@
 ﻿@model WebApplication2.Models.ViewModels.ClinicianPatientReportVM
 
 @{
-    ViewData["Title"] = "Patient report – " + Model.Name;
+    ViewData["Title"] = "Patient report";
 }
 
-<h2 class="mb-3">Patient report</h2>
+<h2>Patient report</h2>
 
-<a href="@Url.Action("Patients", "Clinician")" class="btn btn-link mb-3">&laquo; Back to patient list</a>
+<p class="text-muted mb-4">
+    <strong>@Model.Name</strong> &mdash;
+    Age @Model.Age, @Model.Gender &nbsp;|&nbsp;
+    @Model.Condition
+</p>
 
 <div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card mb-3">
-            <div class="card-header">Patient details</div>
+    <!-- Current status -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Current status
+            </div>
             <div class="card-body">
-                <p><strong>Name:</strong> @Model.Name</p>
-                <p><strong>ID:</strong> @Model.PatientId</p>
-                <p><strong>Age:</strong> @Model.Age</p>
-                <p><strong>Gender:</strong> @Model.Gender</p>
-                <p><strong>Condition:</strong> @Model.Condition</p>
                 <p>
-                    <strong>Status:</strong>
-                    @if (Model.Status == "Alert")
+                    <span class="@Model.StatusCss">@Model.Status</span>
+                </p>
+
+                <p class="mb-1">
+                    <strong>Last checked:</strong> @Model.LastCheckText
+                </p>
+
+                <p class="mb-1">
+                    <strong>Last upload:</strong>
+                    @if (Model.LastUploadAt.HasValue)
                     {
-                        <span class="badge bg-danger">Alert</span>
-                    }
-                    else if (Model.Status == "Monitor")
-                    {
-                        <span class="badge bg-warning text-dark">Monitor</span>
+                        @Model.LastUploadAt.Value.ToString("dd-MM-yyyy HH:mm")
                     }
                     else
                     {
-                        <span class="badge bg-success">Stable</span>
+                        <span class="text-muted">No uploads yet</span>
                     }
                 </p>
-                <p><strong>Assigned:</strong> @Model.AssignedAt.ToString()</p>
-                <p><strong>Last check:</strong> @Model.LastCheckText</p>
+
+                <p class="mb-1">
+                    <strong>Total uploads:</strong> @Model.TotalUploads
+                </p>
+
+                <p class="mb-0">
+                    <strong>Latest PPI:</strong> @Model.LatestPeakPressureIndex<br />
+                    <strong>Latest contact area %:</strong> @Model.LatestContactAreaPct.ToString("0.0")%
+                </p>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card mb-3">
-            <div class="card-header">Summary metrics</div>
+    <!-- Risk score -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Risk score
+            </div>
             <div class="card-body">
-                <p><strong>Total uploads:</strong> @Model.TotalUploads</p>
-                <p><strong>Latest Peak Pressure Index (PPI):</strong> @Model.LatestPpi</p>
-                <p><strong>Latest Contact Area %:</strong> @Model.LatestContactAreaPct.ToString("0.0")%</p>
                 <p>
-                    <strong>Risk score:</strong>
-                    <span class="@Model.RiskCss">@Model.RiskScore</span>
+                    <span class="@Model.RiskCss">@Model.RiskLabel</span>
                 </p>
-                <p class="text-muted small mb-0">
-                    Risk score is a simple composite using PPI and Contact Area % for demo purposes.
+                <p class="text-muted mb-0">
+                    Risk score label:
+                    <strong>@Model.RiskScore</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned info -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Assignment
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Assigned:</strong>
+                    @Model.AssignedAt.ToString("dd-MM-yyyy")
+                </p>
+                <p class="text-muted mb-0">
+                    This patient is currently supervised by you in GrapheneTrace.
                 </p>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-6">
+<div class="row g-3">
+    <!-- Recent alerts -->
+    <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header">Recent alerts</div>
+            <div class="card-header">
+                Recent alerts
+            </div>
             <div class="card-body">
-                @if (Model.RecentAlerts.Any())
+                @if (!Model.RecentAlerts.Any())
                 {
-                    <ul class="list-unstyled mb-0">
+                    <p class="text-muted mb-0">No alerts recorded.</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
                         @foreach (var a in Model.RecentAlerts)
                         {
-                            <li class="mb-2">
-                                <div class="d-flex justify-content-between">
-                                    <strong>@a.WhenText</strong>
-                                    @if (a.Severity == "High")
-                                    {
-                                        <span class="badge bg-danger">High</span>
-                                    }
-                                    else if (a.Severity == "Medium")
-                                    {
-                                        <span class="badge bg-warning text-dark">Medium</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success">Low</span>
-                                    }
+                            <li class="list-group-item">
+                                <div class="small text-muted">@a.WhenText (@a.TimestampText)</div>
+                                <div>
+                                    <span class="badge bg-danger me-1">@a.Severity</span>
+                                    @a.Message
                                 </div>
-                                <div>@a.Message</div>
                             </li>
                         }
                     </ul>
                 }
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload history -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                Upload history
+            </div>
+            <div class="card-body">
+                @if (!Model.UploadHistory.Any())
+                {
+                    <p class="text-muted mb-0">No uploads yet.</p>
+                }
                 else
                 {
-                    <p class="text-muted mb-0">No alerts recorded.</p>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>PPI</th>
+                                <th>CA %</th>
+                                <th>Severity</th>
+                                <th>File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var u in Model.UploadHistory)
+                            {
+                                <tr>
+                                    <td>@u.TimestampText</td>
+                                    <td>@u.Ppi</td>
+                                    <td>@u.ContactAreaPct.ToString("0.0")%</td>
+                                    <td>@u.Severity</td>
+                                    <td class="text-truncate" style="max-width: 140px;">
+                                        @u.SourceFile
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 }
             </div>
         </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">Clinician notes</div>
-            <div class="card-body">
-                <p class="text-muted small">
-                    In a real system this would be saved to the database.
-                </p>
-                <textarea class="form-control" rows="6"
-                          placeholder="Type your notes about this patient..."></textarea>
-                <button class="btn btn-primary btn-sm mt-2" type="button" disabled>
-                    Save notes (demo)
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span>Upload history</span>
-        <span class="text-muted small">
-            Use browser Print → Save as PDF for submission.
-        </span>
-    </div>
-    <div class="card-body p-0">
-        <table class="table mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Timestamp</th>
-                    <th>PPI</th>
-                    <th>Contact Area %</th>
-                    <th>Severity</th>
-                    <th>Source file</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var u in Model.UploadHistory)
-                {
-                    <tr>
-                        <td>@u.TimestampText</td>
-                        <td>@u.Ppi</td>
-                        <td>@u.ContactAreaPct.ToString("0.0")%</td>
-                        <td>@u.Severity</td>
-                        <td>@u.SourceFile</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
     </div>
 </div>

@@ -1,10 +1,15 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
+<h2>Welcome to GrapheneTrace</h2>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome to sensor data mapping</h1>
-    <p>Login </p>
-    <p>Create an account </p>
-</div>
+<p>
+    This is the landing page. Use the button below to go to the Clinician area.
+</p>
+
+<a asp-controller="Clinician"
+   asp-action="Index"
+   class="btn btn-primary">
+    Go to Clinician Dashboard
+</a>

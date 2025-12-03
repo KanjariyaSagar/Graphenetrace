@@ -1,20 +1,240 @@
-﻿@{
+﻿@model WebApplication2.Models.ViewModels.ClinicianAlertsVM
+@{
     ViewData["Title"] = "Alerts";
 }
 
-<div class="container mt-4">
-    <h2>Alerts</h2>
-    <p class="text-muted">Recent notifications requiring clinician attention.</p>
+@section Styles {
+    <style>
 
-    <ul class="list-group">
-        <li class="list-group-item list-group-item-danger">
-            <strong>Patient Mary Smith:</strong> High pressure detected on left heel. (2 hours ago)
-        </li>
-        <li class="list-group-item list-group-item-warning">
-            <strong>Patient Alex Johnson:</strong> Sensor connectivity issue. (6 hours ago)
-        </li>
-        <li class="list-group-item list-group-item-info">
-            <strong>System:</strong> Routine calibration due in 24 hours.
-        </li>
-    </ul>
+        /* ============================================================
+           LIGHT MODE (unchanged)
+        ============================================================ */
+        body {
+            background: #eef2ff;
+            color: #1e293b;
+        }
+
+        .rounded-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+
+        .dashboard-refresh-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.45);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            cursor: pointer;
+        }
+
+        .info-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-weight: bold;
+        }
+
+        .clear-alert-btn {
+            background: transparent;
+            border: none;
+            color: #dc2626;
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+
+        /* ============================================================
+           DARK MODE — FULL BLACK WITH WHITE TEXT (as requested)
+        ============================================================ */
+        body.gt-theme-dark {
+            background: #000 !important;
+            color: white !important;
+        }
+
+            body.gt-theme-dark * {
+                color: white !important;
+            }
+
+            body.gt-theme-dark .text-muted {
+                color: #b0b7c3 !important;
+            }
+
+            body.gt-theme-dark .rounded-card,
+            body.gt-theme-dark .modal-content {
+                background: #0a0a0a !important;
+                border: 1px solid #333 !important;
+                box-shadow: none !important;
+            }
+
+            body.gt-theme-dark .alert-row {
+                background: #000 !important;
+            }
+
+            body.gt-theme-dark .info-btn {
+                background: #1d4ed8 !important;
+                color: white !important;
+            }
+
+            body.gt-theme-dark .clear-alert-btn {
+                color: #ff6b6b !important;
+            }
+
+            body.gt-theme-dark .badge {
+                background: #333 !important;
+                color: white !important;
+            }
+
+            body.gt-theme-dark .border-bottom {
+                border-color: #333 !important;
+            }
+
+    </style>
+}
+
+<div class="container mt-5 mb-5">
+
+    <h1 class="fw-bold mb-0">Alerts</h1>
+    <p class="text-muted mb-1">Recent pressure and upload alerts for your patients.</p>
+
+    <!-- LAST UPDATED -->
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <span class="text-muted small">
+            Last Updated: @DateTime.Now.ToString("dd MMM yyyy HH:mm")
+        </span>
+        <button onclick="location.reload()" class="dashboard-refresh-btn">🔄</button>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="rounded-card p-3 mb-4">
+
+        <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted small">Filter by severity:</span>
+            <button id="clearAllBtn" class="btn btn-danger btn-sm">Clear All</button>
+        </div>
+
+        <form asp-action="Alerts" method="get" class="d-flex flex-wrap gap-2">
+            @{
+                string selected = (Model.SelectedSeverity ?? "all").ToLower();
+            }
+            <button name="severity" value="all" class="btn btn-sm @(selected == "all" ? "btn-primary" : "btn-outline-secondary")">All</button>
+            <button name="severity" value="info" class="btn btn-sm @(selected == "info" ? "btn-primary" : "btn-outline-secondary")">Info</button>
+            <button name="severity" value="warning" class="btn btn-sm @(selected == "warning" ? "btn-primary" : "btn-outline-secondary")">Warning</button>
+            <button name="severity" value="critical" class="btn btn-sm @(selected == "critical" ? "btn-primary" : "btn-outline-secondary")">Critical</button>
+        </form>
+
+    </div>
+
+    <!-- ALERT HISTORY -->
+    <div class="rounded-card p-4">
+        <h5 class="fw-bold mb-3">Alert History</h5>
+
+        @if (Model.Alerts != null && Model.Alerts.Count > 0)
+        {
+            <div id="alertsContainer">
+                @foreach (var a in Model.Alerts.OrderByDescending(x => x.When))
+                {
+                    <div class="border-bottom py-3 alert-row">
+
+                        <div class="d-flex justify-content-between">
+
+                            <!-- LEFT -->
+                            <div>
+                                <div class="small text-muted">@a.When.ToString("dd MMM yyyy HH:mm")</div>
+
+                                <div class="fw-semibold">
+                                    @a.Title
+                                    <span class="badge ms-2 @a.SeverityCss">@a.Severity</span>
+                                </div>
+
+                                <div class="text-muted small">@a.Detail</div>
+
+                                <div class="small mt-1">
+                                    <strong>Patient:</strong> @a.PatientName
+                                    <span class="text-muted ms-2">Frames: @a.Frames</span>
+                                </div>
+                            </div>
+
+                            <!-- RIGHT ACTION BUTTONS -->
+                            <div class="d-flex flex-column gap-2">
+                                <button class="info-btn"
+                                        onclick="openInfo(
+                                                    '@a.PatientName',
+                                                    '@a.Severity',
+                                                    '@a.When',
+                                                    '@a.Detail',
+                                                    '@a.Frames'
+                                                )">
+                                    i
+                                </button>
+
+                                <button class="clear-alert-btn remove-alert">&times;</button>
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted small">No alerts available.</p>
+        }
+    </div>
 </div>
+
+<!-- INFO MODAL -->
+<div class="modal fade" id="infoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+
+            <h5 class="fw-bold mb-3">Alert Info</h5>
+
+            <p><strong>Patient:</strong> <span id="infoPatient"></span></p>
+            <p><strong>Severity:</strong> <span id="infoSeverity"></span></p>
+            <p><strong>Date:</strong> <span id="infoDate"></span></p>
+            <p><strong>Frames:</strong> <span id="infoFrames"></span></p>
+            <p><strong>Details:</strong> <span id="infoDetails"></span></p>
+
+            <div class="text-end mt-3">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        // REMOVE A SINGLE ALERT
+        document.querySelectorAll(".remove-alert").forEach(btn => {
+            btn.addEventListener("click", () => btn.closest(".alert-row").remove());
+        });
+
+        // CLEAR ALL
+        document.getElementById("clearAllBtn").addEventListener("click", () => {
+            document.getElementById("alertsContainer").innerHTML = "";
+        });
+
+        // INFO MODAL
+        function openInfo(patient, severity, date, details, frames) {
+            document.getElementById("infoPatient").innerText = patient;
+            document.getElementById("infoSeverity").innerText = severity;
+            document.getElementById("infoDate").innerText = new Date(date).toLocaleString();
+            document.getElementById("infoFrames").innerText = frames;
+            document.getElementById("infoDetails").innerText = details;
+
+            new bootstrap.Modal(document.getElementById("infoModal")).show();
+        }
+
+    </script>
+}

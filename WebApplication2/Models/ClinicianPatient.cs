@@ -1,19 +1,16 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace WebApplication2.Models
+﻿namespace WebApplication2.Models
 {
     public class ClinicianPatient
     {
         public int ClinicianID { get; set; }
         public int PatientID { get; set; }
-        public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
 
-        // Navigation
-        [ForeignKey("ClinicianID")]
+        // NEW: short description of why the patient is under this clinician
+        public string? Condition { get; set; } = string.Empty;
+
+        public DateTime AssignedAt { get; set; }
+
         public User Clinician { get; set; } = default!;
-
-        [ForeignKey("PatientID")]
         public User Patient { get; set; } = default!;
     }
 }

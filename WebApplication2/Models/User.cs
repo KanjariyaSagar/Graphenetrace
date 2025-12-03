@@ -24,8 +24,11 @@ namespace WebApplication2.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
 
+        public int? Age { get; set; }
+        public string? Gender { get; set; }
+
         // Navigation properties
-        public ICollection<ClinicianPatient> ClinicianLinks { get; set; } = new List<ClinicianPatient>();
-        public ICollection<ClinicianPatient> PatientLinks { get; set; } = new List<ClinicianPatient>();
+        //public ICollection<ClinicianPatient> ClinicianLinks { get; set; } = new List<ClinicianPatient>();
+        //public ICollection<ClinicianPatient> PatientLinks { get; set; } = new List<ClinicianPatient>();
     }
 }

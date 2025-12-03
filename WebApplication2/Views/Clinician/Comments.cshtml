@@ -1,31 +1,355 @@
-﻿@{
+﻿@model WebApplication2.Models.ViewModels.ClinicianCommentsVM
+
+@{
     ViewData["Title"] = "Comments";
 }
 
-<div class="container mt-4">
-    <h2>Comments</h2>
-    <p class="text-muted">View and respond to patient messages.</p>
+@section Styles {
+    <style>
 
-    <div class="card shadow-sm mb-3">
-        <div class="card-body">
-            <h6><strong>Mary Smith</strong></h6>
-            <p>“Feeling mild discomfort today. Should I adjust the pressure?”</p>
-            <form>
-                <textarea class="form-control" rows="2" placeholder="Type your reply..."></textarea>
-                <button class="btn btn-primary btn-sm mt-2">Send Reply</button>
-            </form>
-        </div>
+        /* =========================================================
+           LIGHT MODE (unchanged)
+        ========================================================= */
+        body {
+            background: #eef2ff;
+            color: #1e293b;
+        }
+
+        .rounded-card {
+            background: white;
+            border-radius: 1.2rem;
+            padding: 1.6rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .kpi-card {
+            border-radius: 1.3rem;
+            padding: 1.4rem;
+            color: white;
+            height: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .kpi-value {
+            font-size: 2.4rem;
+            font-weight: 700;
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .info-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-weight: bold;
+        }
+
+        .remove-btn {
+            background: transparent;
+            border: none;
+            color: #dc2626;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .reply-btn {
+            background: #e2e8f0;
+            border: none;
+            color: #1e293b;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .reply-box {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .reply-bubble {
+            background: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 6px;
+            width: fit-content;
+            color: #1e293b;
+        }
+
+        /* =========================================================
+           DARK MODE — FULL BLACK + WHITE TEXT
+           (per your explicit request)
+        ========================================================= */
+        body.gt-theme-dark {
+            background: #000000 !important;
+            color: #ffffff !important;
+        }
+
+            /* ALL TEXT white except muted */
+            body.gt-theme-dark p,
+            body.gt-theme-dark span,
+            body.gt-theme-dark div,
+            body.gt-theme-dark h1,
+            body.gt-theme-dark h5,
+            body.gt-theme-dark strong {
+                color: #ffffff !important;
+            }
+
+            /* Muted text */
+            body.gt-theme-dark .text-muted {
+                color: #b0b7c3 !important;
+            }
+
+            /* ALL cards = true black */
+            body.gt-theme-dark .rounded-card,
+            body.gt-theme-dark .modal-content {
+                background: #0a0a0a !important; /* almost black */
+                border: 1px solid #333 !important;
+                color: #ffffff !important;
+                box-shadow: none !important;
+            }
+
+                /* Filter box should be black */
+                body.gt-theme-dark .rounded-card * {
+                    color: #ffffff !important;
+                }
+
+            /* KPI cards dim */
+            body.gt-theme-dark .kpi-card {
+                filter: brightness(0.85);
+                box-shadow: none !important;
+            }
+
+            /* Buttons */
+            body.gt-theme-dark .info-btn {
+                background: #1d4ed8 !important;
+                color: #ffffff !important;
+            }
+
+            body.gt-theme-dark .reply-btn {
+                background: #1e293b !important;
+                color: #ffffff !important;
+            }
+
+            body.gt-theme-dark .remove-btn {
+                color: #ff6b6b !important;
+            }
+
+            /* Reply bubble in dark mode */
+            body.gt-theme-dark .reply-bubble {
+                background: #1c1c1c !important;
+                color: #ffffff !important;
+            }
+
+            /* Borders */
+            body.gt-theme-dark .border-bottom {
+                border-color: #333 !important;
+            }
+
+            /* Badges */
+            body.gt-theme-dark .badge {
+                background: #333 !important;
+                color: #ffffff !important;
+            }
+
+    </style>
+}
+
+<div class="container mt-5 mb-5">
+
+    <h1 class="fw-bold mb-0">Comments</h1>
+    <p class="text-muted mb-2">Recent notes and follow-up actions for your patients.</p>
+
+    <!-- Last updated -->
+    <div class="d-flex align-items-center mb-4" style="gap:10px;">
+        <span class="text-muted small">Last Updated: @DateTime.Now.ToString("dd MMM yyyy HH:mm")</span>
+        <button class="dashboard-refresh-btn" onclick="location.reload();">🔄</button>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <h6><strong>Alex Johnson</strong></h6>
-            <p>“Device shows red alert but no pain felt.”</p>
-            <form>
-                <textarea class="form-control" rows="2" placeholder="Type your reply..."></textarea>
-                <button class="btn btn-primary btn-sm mt-2">Send Reply</button>
-            </form>
+    <!-- KPI CARDS -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="kpi-card" style="background:#2563eb;">
+                <div class="kpi-label">Total Comments</div>
+                <div class="kpi-value">@Model.TotalComments</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="kpi-card" style="background:#0ea5e9;">
+                <div class="kpi-label">Last 7 Days</div>
+                <div class="kpi-value">@Model.Last7DaysComments</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="kpi-card" style="background:#f59e0b;">
+                <div class="kpi-label">Follow-up Items</div>
+                <div class="kpi-value">@Model.FollowUpCount</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="rounded-card mb-4">
+
+        <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted small">Filter by category:</span>
+            <button id="clearAllComments" class="btn btn-danger btn-sm">Clear All</button>
+        </div>
+
+        <form asp-action="Comments" method="get" class="d-flex flex-wrap gap-2">
+            @{
+                string selected = (Model.SelectedCategory ?? "all").ToLower();
+            }
+
+            <button name="category" value="all" class="btn btn-sm @(selected == "all" ? "btn-primary" : "btn-outline-secondary")">All</button>
+            <button name="category" value="general" class="btn btn-sm @(selected == "general" ? "btn-primary" : "btn-outline-secondary")">General</button>
+            <button name="category" value="followup" class="btn btn-sm @(selected == "followup" ? "btn-primary" : "btn-outline-secondary")">Follow-up</button>
+            <button name="category" value="action" class="btn btn-sm @(selected == "action" ? "btn-primary" : "btn-outline-secondary")">Action</button>
+        </form>
+
+    </div>
+
+    <!-- COMMENT LIST -->
+    <div class="rounded-card p-4">
+
+        <h5 class="fw-bold mb-3">Comment History</h5>
+
+        @if (Model.Comments != null && Model.Comments.Count > 0)
+        {
+            <div id="commentsContainer">
+
+                @foreach (var c in Model.Comments.OrderByDescending(x => x.When))
+                {
+                    <div class="border-bottom py-3 comment-row">
+
+                        <div class="d-flex justify-content-between">
+
+                            <!-- LEFT -->
+                            <div style="width:100%;">
+                                <div class="small text-muted">@c.When.ToString("dd MMM yyyy HH:mm")</div>
+
+                                <div class="fw-semibold">
+                                    @c.PatientName
+                                    <span class="badge ms-2 @c.CategoryCss">@c.Category</span>
+                                </div>
+
+                                <div class="text-muted small mb-1">@c.Text</div>
+
+                                <div class="small">
+                                    <strong>Author:</strong> <b>Krishna</b>
+                                </div>
+
+                                <!-- REPLY BUTTON -->
+                                <button class="reply-btn mt-2" onclick="toggleReplyBox(this)">💬 Reply</button>
+
+                                <!-- REPLY BOX -->
+                                <div class="reply-box">
+                                    <input class="form-control mb-2 reply-input" placeholder="Write a reply..." />
+                                    <button class="btn btn-primary btn-sm" onclick="sendReply(this)">Send</button>
+                                    <div class="reply-thread mt-2"></div>
+                                </div>
+
+                            </div>
+
+                            <!-- RIGHT BUTTONS -->
+                            <div class="d-flex flex-column gap-2 align-items-center">
+                                <button class="info-btn"
+                                        onclick="openInfo('@c.PatientName','@c.Category','@c.When','@c.Text')">
+                                    i
+                                </button>
+
+                                <button class="remove-btn remove-comment">&times;</button>
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        }
+        else
+        {
+            <p class="text-muted small">No comments available.</p>
+        }
+
+    </div>
+</div>
+
+<!-- INFO MODAL -->
+<div class="modal fade" id="infoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+
+            <h5 class="mb-3">Comment Info</h5>
+
+            <p><strong>Patient:</strong> <span id="infoPatient"></span></p>
+            <p><strong>Category:</strong> <span id="infoCategory"></span></p>
+            <p><strong>Created:</strong> <span id="infoDate"></span></p>
+            <p><strong>Comment:</strong> <span id="infoText"></span></p>
+
+            <div class="text-end mt-3">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+
         </div>
     </div>
 </div>
 
+@section Scripts {
+    <script>
+
+        /* REMOVE COMMENT */
+        document.querySelectorAll(".remove-comment").forEach(btn => {
+            btn.addEventListener("click", () => btn.closest(".comment-row").remove());
+        });
+
+        /* CLEAR ALL COMMENTS */
+        document.getElementById("clearAllComments").addEventListener("click", () => {
+            document.getElementById("commentsContainer").innerHTML = "";
+        });
+
+        /* INFO MODAL */
+        function openInfo(patient, category, date, text) {
+            document.getElementById("infoPatient").innerText = patient;
+            document.getElementById("infoCategory").innerText = category;
+            document.getElementById("infoDate").innerText = date;
+            document.getElementById("infoText").innerText = text;
+
+            new bootstrap.Modal(document.getElementById("infoModal")).show();
+        }
+
+        /* TOGGLE REPLY BOX */
+        function toggleReplyBox(btn) {
+            const box = btn.nextElementSibling;
+            box.style.display = box.style.display === "block" ? "none" : "block";
+        }
+
+        /* SEND REPLY */
+        function sendReply(btn) {
+            const parent = btn.closest(".reply-box");
+            const input = parent.querySelector(".reply-input");
+            const thread = parent.querySelector(".reply-thread");
+
+            if (input.value.trim() === "") return;
+
+            const bubble = document.createElement("div");
+            bubble.classList.add("reply-bubble");
+            bubble.innerText = input.value;
+
+            thread.appendChild(bubble);
+            input.value = "";
+        }
+
+    </script>
+}

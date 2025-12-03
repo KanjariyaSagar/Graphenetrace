@@ -7,7 +7,7 @@ namespace WebApplication2.Models
     public class SensorFrame
     {
         [Key]
-        public long DataID { get; set; }
+        public int DataID { get; set; }       // changed from long to int
 
         public int PatientID { get; set; }
 

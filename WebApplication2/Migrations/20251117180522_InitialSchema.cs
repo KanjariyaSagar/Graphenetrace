@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WebApplication2.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,7 +22,9 @@ namespace WebApplication2.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Age = table.Column<int>(type: "int", nullable: true),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -80,7 +82,7 @@ namespace WebApplication2.Migrations
                 name: "SensorFrames",
                 columns: table => new
                 {
-                    DataID = table.Column<long>(type: "bigint", nullable: false)
+                    DataID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PatientID = table.Column<int>(type: "int", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -105,11 +107,10 @@ namespace WebApplication2.Migrations
                     AlertID = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PatientID = table.Column<int>(type: "int", nullable: false),
-                    DataID = table.Column<long>(type: "bigint", nullable: true),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DataID = table.Column<int>(type: "int", nullable: true),
                     Severity = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Acknowledged = table.Column<bool>(type: "bit", nullable: false)
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -135,7 +136,7 @@ namespace WebApplication2.Migrations
                     CommentID = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PatientID = table.Column<int>(type: "int", nullable: false),
-                    DataID = table.Column<long>(type: "bigint", nullable: true),
+                    DataID = table.Column<int>(type: "int", nullable: true),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -160,16 +161,13 @@ namespace WebApplication2.Migrations
                 name: "FrameMetrics",
                 columns: table => new
                 {
-                    MetricID = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DataID = table.Column<long>(type: "bigint", nullable: false),
-                    PeakPressure = table.Column<int>(type: "int", nullable: false),
-                    ContactAreaPct = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CalculatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    DataID = table.Column<int>(type: "int", nullable: false),
+                    PeakPressureIndex = table.Column<int>(type: "int", nullable: false),
+                    ContactAreaPct = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FrameMetrics", x => x.MetricID);
+                    table.PrimaryKey("PK_FrameMetrics", x => x.DataID);
                     table.ForeignKey(
                         name: "FK_FrameMetrics_SensorFrames_DataID",
                         column: x => x.DataID,

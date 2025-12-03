@@ -1,44 +1,291 @@
 ﻿@{
-    Layout = null;
+    var title = ViewData["Title"] as string ?? "GrapheneTrace";
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - GrapheneTrace</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - GrapheneTrace</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-</head>
-<body>
-    <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom mb-3">
-        <div class="container">
-            <a class="navbar-brand" asp-controller="Home" asp-action="Index">GrapheneTrace</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
-                    aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div id="nav" class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" asp-controller="Clinician" asp-action="Index">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Clinician" asp-action="Metrics">Metrics</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Clinician" asp-action="Patients">Patients</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Clinician" asp-action="Alerts">Alerts</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Clinician" asp-action="Comments">Comments</a></li>
-                </ul>
-                <div class="d-flex">
-                    <a class="btn btn-outline-secondary btn-sm" asp-controller="Account" asp-action="Logout">Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
 
-    <main class="container pb-4">
-        @RenderBody()
+    @RenderSection("Styles", required: false)
+
+    <style>
+        /* ========== GLOBAL THEME ========== */
+        body.gt-theme-light {
+            background: radial-gradient(circle at top left, #c4e1ff, #e9f2ff 45%, #dbeafe 80%);
+            color: #111827;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body.gt-theme-dark {
+            background: #020617;
+            color: #e5e7eb;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* ========== NAVBAR ========== */
+        .gt-nav {
+            color: #ffffff;
+            padding: 0.75rem 2.5rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.35);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body.gt-theme-light .gt-nav {
+            background: linear-gradient(90deg, #0d6efd, #0080ff);
+        }
+
+        body.gt-theme-dark .gt-nav {
+            background: #020617;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+        }
+
+        .gt-nav-brand {
+            display: inline-flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .gt-logo {
+            height: 34px;
+            width: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: .45rem;
+        }
+
+        .gt-nav .nav-link {
+            color: #e5e7eb;
+            font-size: .95rem;
+            margin: 0 .35rem;
+        }
+
+            .gt-nav .nav-link.active,
+            .gt-nav .nav-link:hover {
+                color: #ffffff;
+            }
+
+        body.gt-theme-dark .gt-nav .nav-link {
+            color: #9ca3af;
+        }
+
+            body.gt-theme-dark .gt-nav .nav-link.active,
+            body.gt-theme-dark .gt-nav .nav-link:hover {
+                color: #ffffff;
+            }
+
+        .gt-nav-right {
+            font-size: .85rem;
+            color: #e5e7eb;
+        }
+
+        .gt-nav-time {
+            margin-right: 1rem;
+        }
+
+        .gt-nav-toggle {
+            margin-right: 1rem;
+            border-radius: 999px;
+            padding: .2rem .9rem;
+            border: 1px solid rgba(255,255,255,0.85);
+            background: transparent;
+            color: white;
+            font-size: .8rem;
+        }
+
+        .gt-nav-logout {
+            border-radius: 999px;
+            padding: .25rem 1.3rem;
+            font-size: .85rem;
+            font-weight: 500;
+            border: none;
+        }
+
+        body.gt-theme-light .gt-nav-logout {
+            background: white;
+            color: #0d6efd;
+        }
+
+        body.gt-theme-dark .gt-nav-logout {
+            background: #0f172a;
+            color: #e5e7eb;
+            border: 1px solid #1f2937;
+        }
+
+        /* ========== FOOTER ========== */
+        .gt-footer {
+            border-top: 1px solid rgba(148, 163, 184, 0.25);
+            background: transparent;
+        }
+
+        /* ========== DARK MODE: GENERAL TEXT VISIBILITY ========== */
+        body.gt-theme-dark .card-body,
+        body.gt-theme-dark .card-header,
+        body.gt-theme-dark table,
+        body.gt-theme-dark .table td,
+        body.gt-theme-dark .table th,
+        body.gt-theme-dark textarea.form-control {
+            color: #e5e7eb;
+        }
+
+        body.gt-theme-dark .card.summary-card {
+            background-color: #020a1f;
+            border-color: #1f2937;
+        }
+
+        body.gt-theme-dark .summary-card .card-header {
+            border-bottom-color: #111827;
+        }
+
+        body.gt-theme-dark textarea.form-control {
+            background-color: #020a1f;
+            border-color: #1f2937;
+        }
+
+        body.gt-theme-dark .text-muted {
+            color: #9ca3af !important;
+        }
+    </style>
+</head>
+
+<body class="gt-theme-light">
+    <header>
+        <nav class="navbar navbar-expand-lg gt-nav">
+            <div class="container-fluid">
+
+                <a class="gt-nav-brand" asp-controller="Clinician" asp-action="Dashboard">
+                    <img id="gt-logo" class="gt-logo" src="~/images/logo.png" alt="GrapheneTrace logo" />
+                    <span>GrapheneTrace</span>
+                </a>
+
+                <button class="navbar-toggler navbar-light" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNav"
+                        aria-controls="mainNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link @(title == "Clinician Dashboard" ? "active" : "")"
+                               asp-controller="Clinician" asp-action="Dashboard">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(title == "Patients" ? "active" : "")"
+                               asp-controller="Clinician" asp-action="Patients">
+                                Patients
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(title == "Metrics" ? "active" : "")"
+                               asp-controller="Clinician" asp-action="Metrics">
+                                Metrics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(title == "Alerts" ? "active" : "")"
+                               asp-controller="Clinician" asp-action="Alerts">
+                                Alerts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(title == "Comments" ? "active" : "")"
+                               asp-controller="Clinician" asp-action="Comments">
+                                Comments
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="d-flex align-items-center gt-nav-right">
+                        <div id="gt-clock" class="gt-nav-time"></div>
+                        <button id="gt-theme-toggle" type="button" class="gt-nav-toggle">
+                            Dark Mode
+                        </button>
+                        <a asp-controller="Account"
+                           asp-action="Logout"
+                           class="btn gt-nav-logout">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <main role="main">
+        <div class="container-fluid py-4">
+            @RenderBody()
+        </div>
     </main>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <footer class="gt-footer text-center py-3 small text-muted">
+        © 2025 GrapheneTrace
+    </footer>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        (function () {
+            const body = document.body;
+            const toggleBtn = document.getElementById('gt-theme-toggle');
+            const logo = document.getElementById('gt-logo');
+            const clock = document.getElementById('gt-clock');
+
+            const LIGHT_LOGO = '@Url.Content("~/images/logo.png")';
+            const DARK_LOGO = '@Url.Content("~/images/darklogo.png")';
+
+            function updateClock() {
+                const now = new Date();
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                clock.textContent = hh + ':' + mm;
+            }
+
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    body.classList.add('gt-theme-dark');
+                    body.classList.remove('gt-theme-light');
+                    toggleBtn.textContent = 'Light Mode';
+                    logo.src = DARK_LOGO;
+                } else {
+                    body.classList.add('gt-theme-light');
+                    body.classList.remove('gt-theme-dark');
+                    toggleBtn.textContent = 'Dark Mode';
+                    logo.src = LIGHT_LOGO;
+                }
+            }
+
+            const saved = localStorage.getItem('gt-theme');
+            applyTheme(saved === 'dark' ? 'dark' : 'light');
+
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function () {
+                    const nowDark = body.classList.contains('gt-theme-dark');
+                    const next = nowDark ? 'light' : 'dark';
+                    applyTheme(next);
+                    localStorage.setItem('gt-theme', next);
+                });
+            }
+        })();
+    </script>
+
     @RenderSection("Scripts", required: false)
 </body>
 </html>

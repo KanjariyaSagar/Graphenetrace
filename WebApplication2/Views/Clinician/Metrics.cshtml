@@ -1,284 +1,362 @@
-﻿@model WebApplication2.Models.ViewModels.ClinicianMetricsVM
-@using System.Text.Json
-
-@{
+﻿@{
     ViewData["Title"] = "Metrics";
 }
 
-<h1 class="mb-2">Metrics</h1>
-<p class="text-muted mb-4">
-    Below are the recent performance metrics and readings.
-</p>
+@section Styles {
+    <style>
+        body {
+            background: #eef2ff;
+            color: #0f172a;
+        }
 
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <form asp-action="Metrics" method="post" class="row g-3 align-items-end">
-            <!-- Metric selector -->
-            <div class="col-12 col-md-3">
-                <label class="form-label fw-semibold">Metric</label>
-                <select asp-for="SelectedMetric" class="form-select">
-                    <option value="PPI">Peak Pressure Index (PPI)</option>
-                    <option value="ContactArea">Contact Area %</option>
+        .refresh-btn-round {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #d1d5db;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
+
+            .refresh-btn-round:hover {
+                background: #bfc4cc;
+                transform: translateY(-1px);
+            }
+
+        .date-display {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 3px;
+            min-height: 18px;
+        }
+
+        .filter-input, .filter-btn {
+            height: 38px !important;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .metrics-card {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            background: #ffffff;
+        }
+
+        .metrics-chart-card {
+            border-radius: 1.2rem;
+            border: none;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.10);
+            background: radial-gradient(circle at top left, #e0f2fe, #ffffff);
+        }
+
+        .metric-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(15,23,42,0.04);
+            color: #0f172a;
+        }
+
+        /* Dark mode tweaks */
+        body.gt-theme-dark {
+            background: #020617 !important;
+            color: #e5e7eb !important;
+        }
+
+            body.gt-theme-dark .metrics-card,
+            body.gt-theme-dark .metrics-chart-card {
+                background: #020617 !important;
+                border: 1px solid #1f2937 !important;
+                box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+            }
+
+            body.gt-theme-dark .metric-pill {
+                background: rgba(148,163,184,0.15);
+                color: #e5e7eb;
+            }
+    </style>
+}
+
+<div class="container mt-5 mb-5">
+
+    <!-- TITLE -->
+    <h1 class="fw-bold mb-1">Metrics</h1>
+    <p class="text-muted mb-2">Below are the recent performance metrics and readings.</p>
+
+    <!-- LAST UPDATED -->
+    <div class="d-flex align-items-center mb-4" style="gap:10px;">
+        <span class="text-muted">Last Updated: @DateTime.Now.ToString("dd MMM yyyy HH:mm")</span>
+        <button class="refresh-btn-round" onclick="location.reload();">🔄</button>
+    </div>
+
+    <!-- FILTER CARD -->
+    <div class="card metrics-card p-4 mb-4">
+
+        <div class="d-flex align-items-center flex-nowrap" style="gap:18px;">
+
+            <!-- METRIC -->
+            <div class="filter-item" style="width:260px;">
+                <label class="form-label fw-semibold mb-1" style="margin-bottom:3px !important;">Metric</label>
+
+                <select id="metricSelect" class="form-select filter-input">
+                    <option value="ppi">Peak Pressure index (PPI)</option>
+                    <option value="ca">Contact Area %</option>
+                    <option value="uploads">Upload Count</option>
                 </select>
+
+                <div class="date-display">&nbsp;</div>
             </div>
 
-            <!-- From -->
-            <div class="col-12 col-md-3">
-                <label class="form-label fw-semibold">From</label>
-                <input asp-for="From" class="form-control" type="date" />
+            <!-- FROM -->
+            <div class="filter-item" style="width:160px;">
+                <label class="form-label fw-semibold mb-1" style="margin-bottom:3px !important;">From</label>
+
+                <input type="date" id="fromDate"
+                       class="form-control filter-input"
+                       placeholder="dd-mm-yyyy" />
+
+                <div class="date-display" id="fromDisplay"></div>
             </div>
 
-            <!-- To -->
-            <div class="col-12 col-md-3">
-                <label class="form-label fw-semibold">To</label>
-                <input asp-for="To" class="form-control" type="date" />
+            <!-- TO -->
+            <div class="filter-item" style="width:160px;">
+                <label class="form-label fw-semibold mb-1" style="margin-bottom:3px !important;">To</label>
+
+                <input type="date" id="toDate"
+                       class="form-control filter-input"
+                       placeholder="dd-mm-yyyy" />
+
+                <div class="date-display" id="toDisplay"></div>
             </div>
 
-            <!-- Quick ranges -->
-            <div class="col-12 col-md-3">
-                <label class="form-label fw-semibold d-block">Quick ranges</label>
-                <div class="btn-group btn-group-sm flex-wrap" role="group">
-                    <button type="submit" name="quickRange" value="Today"
-                            class="btn btn-outline-primary @(Model.QuickRange == "Today" ? "active" : "")">
-                        Today
-                    </button>
-                    <button type="submit" name="quickRange" value="7d"
-                            class="btn btn-outline-primary @(Model.QuickRange == "7d" ? "active" : "")">
-                        7 days
-                    </button>
-                    <button type="submit" name="quickRange" value="30d"
-                            class="btn btn-outline-primary @(Model.QuickRange == "30d" ? "active" : "")">
-                        30 days
-                    </button>
-                    <button type="submit" name="quickRange" value="6m"
-                            class="btn btn-outline-primary @(Model.QuickRange == "6m" ? "active" : "")">
-                        6 months
-                    </button>
-                    <button type="submit" name="quickRange" value="1y"
-                            class="btn btn-outline-primary @(Model.QuickRange == "1y" ? "active" : "")">
-                        1 year
-                    </button>
-                    <button type="submit" name="quickRange" value="All"
-                            class="btn btn-outline-secondary @(Model.QuickRange == "All" ? "active" : "")">
-                        All
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary btn-sm mt-2">
-                    Apply filters
+            <!-- APPLY -->
+            <div class="filter-item" style="width:120px;">
+                <button type="button"
+                        onclick="applyMetricChart()"
+                        class="btn fw-semibold w-100 filter-btn"
+                        style="background:#ff4f79;color:white;border:none;">
+                    Apply
                 </button>
             </div>
-        </form>
+
+            <!-- CLEAR -->
+            <div class="filter-item" style="width:120px;">
+                <button type="button"
+                        onclick="clearFilters()"
+                        class="btn btn-outline-secondary fw-semibold w-100 filter-btn">
+                    Clear
+                </button>
+            </div>
+
+        </div>
+
     </div>
+
+    <!-- SINGLE CHART SECTION -->
+    <div id="chartsSection" style="display:none;">
+
+        <div class="row g-4">
+            <div class="col-lg-12">
+                <div class="card metrics-chart-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <div>
+                            <h5 id="metricChartTitle" class="fw-bold mb-1" style="color:#ff7d00;">
+                                Metric Over Time
+                            </h5>
+                            <span id="metricChartSubtitle" class="text-muted small">
+                                Simulated data for the selected date range.
+                            </span>
+                        </div>
+                        <span id="metricPill" class="metric-pill">PPI</span>
+                    </div>
+
+                    <div style="height:260px;">
+                        <canvas id="metricChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </div>
 
-@if (Model.TimeLabels == null || !Model.TimeLabels.Any())
-{
-    <div class="alert alert-warning">
-        No data in this range.
-    </div>
-}
-else
-{
-    <!-- MAIN LINE CHART -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header fw-semibold">
-            @(Model.SelectedMetric == "ContactArea"
-                    ? "Contact Area % trend"
-                    : "Peak Pressure Index trend")
-    </div>
-    <div class="card-body">
-        <canvas id="metricLineChart" style="height:300px"></canvas>
-        <div class="mt-3 text-muted small">
-            <strong>Min:</strong> @Model.MinValue
-            &nbsp;•&nbsp;
-            <strong>Max:</strong> @Model.MaxValue
-            &nbsp;•&nbsp;
-            <strong>Average:</strong> @Model.AvgValue
-        </div>
-    </div>
-</div>
-
-    <!-- SECONDARY LINE CHART (Contact Area %) -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header fw-semibold">
-            Contact Area % trend (comparison)
-        </div>
-        <div class="card-body">
-            <canvas id="contactAreaChart" style="height:260px"></canvas>
-        </div>
-    </div>
-
-    <!-- BAR CHART FOR DAILY UPLOADS -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header fw-semibold">
-            Upload count over time
-        </div>
-        <div class="card-body">
-            <canvas id="uploadBarChart" style="height:260px"></canvas>
-        </div>
-    </div>
-}
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        (function () {
-            // Build arrays from the model (empty arrays if null)
-            const labels   = @Html.Raw(JsonSerializer.Serialize(Model.TimeLabels ?? new List<string>()));
-            const values   = @Html.Raw(JsonSerializer.Serialize(Model.Values ?? new List<decimal>()));
-            const secondary = @Html.Raw(JsonSerializer.Serialize(Model.SecondaryValues ?? new List<decimal>()));
-            const uploads  = @Html.Raw(JsonSerializer.Serialize(Model.UploadCounts ?? new List<int>()));
 
-            // If there is no data, don't draw charts
-            if (!labels || labels.length === 0) {
+    <script>
+        let chartInstance = null;
+
+        const metricConfig = {
+            ppi: {
+                title: "Peak Pressure Index (PPI) over time",
+                pill: "PPI",
+                borderColor: "#ff7d00",
+                bgColor: "rgba(255,125,0,0.18)",
+                min: 40,
+                max: 90
+            },
+            ca: {
+                title: "Contact Area (%) over time",
+                pill: "Contact Area %",
+                borderColor: "#7b2cbf",
+                bgColor: "rgba(123,44,191,0.18)",
+                min: 10,
+                max: 40
+            },
+            uploads: {
+                title: "Upload Count over time",
+                pill: "Upload Count",
+                borderColor: "#0077ff",
+                bgColor: "rgba(0,119,255,0.18)",
+                min: 1,
+                max: 20
+            }
+        };
+
+        function dateRange(from, to) {
+            const start = new Date(from);
+            const end = new Date(to);
+            const arr = [];
+
+            const d = new Date(start);
+            while (d <= end) {
+                arr.push(d.toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }));
+                d.setDate(d.getDate() + 1);
+            }
+            return arr;
+        }
+
+        function randomData(len, min, max) {
+            return Array.from({ length: len }, () =>
+                Math.floor(Math.random() * (max - min + 1)) + min
+            );
+        }
+
+        function clearFilters() {
+            const fromInput = document.getElementById("fromDate");
+            const toInput = document.getElementById("toDate");
+
+            fromInput.value = "";
+            toInput.value = "";
+            document.getElementById("fromDisplay").innerHTML = "";
+            document.getElementById("toDisplay").innerHTML = "";
+            document.getElementById("chartsSection").style.display = "none";
+
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+        }
+
+        function applyMetricChart() {
+            const fromInput = document.getElementById("fromDate");
+            const toInput = document.getElementById("toDate");
+            const metricSelect = document.getElementById("metricSelect");
+
+            const from = fromInput.value;
+            const to = toInput.value;
+
+            if (!from || !to) {
+                alert("Please select both From and To dates.");
                 return;
             }
 
-            // Main metric line chart
-            const ctxLine = document.getElementById('metricLineChart');
-            new Chart(ctxLine, {
-                type: 'line',
+            // Update small date text under inputs
+            document.getElementById("fromDisplay").innerHTML =
+                new Date(from).toLocaleDateString("en-GB");
+            document.getElementById("toDisplay").innerHTML =
+                new Date(to).toLocaleDateString("en-GB");
+
+            const labels = dateRange(from, to);
+
+            const key = metricSelect.value;
+            const cfg = metricConfig[key];
+
+            // New random data every time -> graph always different if you change dates
+            const values = randomData(labels.length, cfg.min, cfg.max);
+
+            // Show section
+            document.getElementById("chartsSection").style.display = "block";
+
+            // Update titles & pill
+            document.getElementById("metricChartTitle").textContent = cfg.title;
+            document.getElementById("metricPill").textContent = cfg.pill;
+
+            // Destroy previous chart if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const ctx = document.getElementById("metricChart").getContext("2d");
+
+            chartInstance = new Chart(ctx, {
+                type: key === "uploads" ? "bar" : "line",
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: '@(Model.SelectedMetric == "ContactArea" ? "Contact Area %" : "Peak Pressure Index")',
+                        label: cfg.pill,
                         data: values,
+                        borderColor: cfg.borderColor,
+                        backgroundColor: cfg.bgColor,
+                        borderWidth: 3,
                         tension: 0.35,
-                        pointRadius: 4
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderRadius: key === "uploads" ? 6 : 0
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { display: true } },
-                    scales: {
-                        x: { ticks: { maxRotation: 0, autoSkip: true } },
-                        y: { beginAtZero: false }
-                    }
-                }
-            });
-
-            // Secondary Contact Area % line chart
-            const ctxSecondary = document.getElementById('contactAreaChart');
-            new Chart(ctxSecondary, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Contact Area %',
-                        data: secondary,
-                        tension: 0.35,
-                        pointRadius: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: true } },
-                    scales: {
-                        x: { ticks: { maxRotation: 0, autoSkip: true } },
-                        y: { beginAtZero: false }
-                    }
-                }
-            });
-
-            // Upload count bar chart
-            const ctxBar = document.getElementById('uploadBarChart');
-            new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Uploads',
-                        data: uploads
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: true } },
-                    scales: {
-                        x: { ticks: { maxRotation: 0, autoSkip: true } },
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        })();
-    </script>
-}
-
-
-            // Main metric line chart
-            const ctxLine = document.getElementById('metricLineChart');
-            new Chart(ctxLine, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '@(Model.SelectedMetric == "ContactArea" ? "Contact Area %" : "Peak Pressure Index")',
-                        data: values,
-                        tension: 0.35,
-                        pointRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 450,
+                        easing: "easeOutCubic"
+                    },
                     plugins: {
-                        legend: { display: true }
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: "index",
+                            intersect: false,
+                            backgroundColor: "rgba(15,23,42,0.9)",
+                            borderColor: "rgba(148,163,184,0.5)",
+                            borderWidth: 1,
+                            padding: 10,
+                            titleColor: "#e5e7eb",
+                            bodyColor: "#e5e7eb"
+                        }
                     },
                     scales: {
-                        x: { ticks: { maxRotation: 0, autoSkip: true } },
-                        y: { beginAtZero: false }
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: "rgba(148,163,184,0.3)"
+                            },
+                            ticks: {
+                                precision: 0
+                            }
+                        }
                     }
                 }
             });
-
-            // Secondary Contact Area % line chart
-            const ctxSecondary = document.getElementById('contactAreaChart');
-            new Chart(ctxSecondary, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Contact Area %',
-                        data: secondary,
-                        tension: 0.35,
-                        pointRadius: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: true }
-                    },
-                    scales: {
-                        x: { ticks: { maxRotation: 0, autoSkip: true } },
-                        y: { beginAtZero: false }
-                    }
-                }
-            });
-
-            // Upload count bar chart
-            const ctxBar = document.getElementById('uploadBarChart');
-            new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Uploads',
-                        data: uploads
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: true }
-                    },
-                    scales: {
-                        x: { ticks: { maxRotation: 0, autoSkip: true } },
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        })();
+        }
     </script>
 }

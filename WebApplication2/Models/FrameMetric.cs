@@ -1,25 +1,17 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApplication2.Models
 {
     public class FrameMetric
     {
-        [Key]
-        public long MetricID { get; set; }
+        [Key, ForeignKey("Data")]
+        public int DataID { get; set; }    //  int, same as SensorFrame.DataID
 
-        public long DataID { get; set; }
-
-        [Required]
-        public int PeakPressure { get; set; }
-
-        [Required]
+        public int PeakPressureIndex { get; set; }
         public decimal ContactAreaPct { get; set; }
 
-        public DateTime CalculatedAt { get; set; } = DateTime.UtcNow;
-
-        [ForeignKey("DataID")]
+        // Navigation back to the frame
         public SensorFrame Data { get; set; } = default!;
     }
 }

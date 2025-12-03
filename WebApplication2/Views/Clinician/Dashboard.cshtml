@@ -1,0 +1,571 @@
+﻿@model WebApplication2.Models.ViewModels.ClinicianDashboardVM
+@{
+    ViewData["Title"] = "Clinician Dashboard";
+
+   
+
+    // 50 Total Frames (50 people)
+    var TotalFramesList = new List<dynamic> {
+        new { Name="Rajesh Kumar", Frames=42, Time="2025-11-25 10:11" },
+        new { Name="Aman Gupta", Frames=38, Time="2025-11-25 09:58" },
+        new { Name="Priya Sharma", Frames=51, Time="2025-11-24 18:20" },
+        new { Name="Neha Patel", Frames=29, Time="2025-11-24 17:10" },
+        new { Name="Rohan Nair", Frames=67, Time="2025-11-24 16:06" },
+        new { Name="Simran Kaur", Frames=33, Time="2025-11-23 20:41" },
+        new { Name="Vikram Singh", Frames=55, Time="2025-11-23 18:55" },
+        new { Name="Mukesh Yadav", Frames=48, Time="2025-11-23 12:22" },
+        new { Name="Sneha Reddy", Frames=77, Time="2025-11-22 19:18" },
+        new { Name="Arjun Mehta", Frames=23, Time="2025-11-22 18:01" },
+
+        new { Name="Sunil Verma", Frames=31, Time="2025-11-21 17:10" },
+        new { Name="Deepika Joshi", Frames=42, Time="2025-11-21 14:59" },
+        new { Name="Anil Sharma", Frames=69, Time="2025-11-21 14:03" },
+        new { Name="Karan Kapoor", Frames=29, Time="2025-11-21 12:11" },
+        new { Name="Meera Pillai", Frames=44, Time="2025-11-20 19:44" },
+        new { Name="Shivangi Rao", Frames=51, Time="2025-11-20 18:22" },
+        new { Name="Suresh Iyer", Frames=38, Time="2025-11-20 17:12" },
+        new { Name="Pooja Sinha", Frames=21, Time="2025-11-20 14:40" },
+        new { Name="Himanshu Dixit", Frames=48, Time="2025-11-20 13:30" },
+        new { Name="Reena Malhotra", Frames=57, Time="2025-11-20 11:29" },
+
+        new { Name="Aakash Jain", Frames=62, Time="2025-11-19 20:05" },
+        new { Name="Ritika Desai", Frames=32, Time="2025-11-19 19:44" },
+        new { Name="Manoj Bhat", Frames=26, Time="2025-11-19 17:55" },
+        new { Name="Vidya Menon", Frames=18, Time="2025-11-19 16:33" },
+        new { Name="Chetan Kulkarni", Frames=73, Time="2025-11-19 15:01" },
+        new { Name="Asha Krishnan", Frames=45, Time="2025-11-19 13:10" },
+        new { Name="Prashant R", Frames=27, Time="2025-11-19 11:40" },
+        new { Name="Ananya Roy", Frames=35, Time="2025-11-19 10:30" },
+        new { Name="Santosh Gowda", Frames=50, Time="2025-11-19 09:12" },
+        new { Name="Tanvi Shetty", Frames=41, Time="2025-11-18 18:43" },
+
+        new { Name="Ravi Teja", Frames=38, Time="2025-11-18 18:11" },
+        new { Name="Rajiv Kumar", Frames=52, Time="2025-11-18 17:22" },
+        new { Name="Pallavi Naik", Frames=33, Time="2025-11-18 16:09" },
+        new { Name="Mohit Chauhan", Frames=46, Time="2025-11-18 15:10" },
+        new { Name="Aarti Singh", Frames=30, Time="2025-11-18 14:10" },
+        new { Name="Nikhil Reddy", Frames=22, Time="2025-11-18 13:39" },
+        new { Name="Shreya Anand", Frames=44, Time="2025-11-18 12:20" },
+        new { Name="Gautam Mishra", Frames=59, Time="2025-11-18 11:58" },
+        new { Name="Payal Kulkarni", Frames=63, Time="2025-11-18 10:44" },
+        new { Name="Varun Raj", Frames=37, Time="2025-11-18 09:55" },
+
+        new { Name="Kavita Patil", Frames=43, Time="2025-11-17 21:31" },
+        new { Name="Rahul Basu", Frames=27, Time="2025-11-17 20:40" },
+        new { Name="Ashwin Rao", Frames=55, Time="2025-11-17 19:54" },
+        new { Name="Teena Mathew", Frames=30, Time="2025-11-17 18:45" },
+        new { Name="Shankar Prasad", Frames=78, Time="2025-11-17 16:10" },
+        new { Name="Divya Agrawal", Frames=65, Time="2025-11-17 15:22" },
+        new { Name="Farhan Ali", Frames=33, Time="2025-11-17 14:50" },
+        new { Name="Lokesh Ch", Frames=49, Time="2025-11-17 13:21" },
+        new { Name="Harish V", Frames=24, Time="2025-11-17 12:12" },
+        new { Name="Bhavana L", Frames=35, Time="2025-11-17 11:09" }
+    };
+
+    // 20 Today's Uploads
+    var TodayUploadsList = TotalFramesList.Take(20).ToList();
+
+    // 20 Patients
+    var PatientsList = TotalFramesList.Take(20).ToList();
+
+    // 10 Last Uploads
+    var LastUploadsList = TotalFramesList.Take(10).ToList();
+}
+@section Styles {
+    <style>
+
+        body {
+            background: #eef2ff;
+        }
+
+        .gt-dashboard-wrapper {
+            max-width: 1200px;
+            margin: auto;
+            padding: 1rem 0 3rem 0;
+        }
+
+        .gt-page-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+        }
+
+        /* Refresh Button */
+        .refresh-btn-round {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #d1d5db;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+            .refresh-btn-round:hover {
+                background: #bfc4cc;
+            }
+
+        /* KPI Cards */
+        .kpi-card {
+            border-radius: 1.3rem;
+            padding: 1.4rem;
+            color: white;
+            height: 100%;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .kpi-value {
+            font-size: 2.4rem;
+            font-weight: 700;
+        }
+
+        .kpi-chip {
+            margin-top: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .kpi-total {
+            background: #2563eb;
+        }
+
+        .kpi-today {
+            background: #16a34a;
+        }
+
+        .kpi-distinct {
+            background: #0284c7;
+        }
+
+        .kpi-last {
+            background: #ef4444;
+        }
+
+        /* Premium Card */
+        .premium-card {
+            background: white;
+            border-radius: 1.2rem;
+            padding: 1.6rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .premium-heading {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        /* Alerts */
+        .alert-item {
+            padding-bottom: 0.6rem;
+            margin-bottom: 0.6rem;
+            border-bottom: 1px solid #e5e7eb;
+            position: relative;
+        }
+
+            .alert-item:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+            }
+
+        .alert-close {
+            position: absolute;
+            right: 0;
+            top: 0;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+
+            .alert-close:hover {
+                color: #ef4444;
+            }
+
+        /* Status Badges */
+        .badge-attention {
+            background: #facc15;
+            color: #1f2937;
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-ok {
+            background: #10b981;
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-monitor {
+            background: #38bdf8;
+            color: #0f172a;
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Premium Table */
+        .premium-table {
+            width: 100%;
+        }
+
+            .premium-table th {
+                text-transform: uppercase;
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: #475569;
+            }
+
+            .premium-table td {
+                font-size: 0.9rem;
+                padding: 0.55rem 0;
+            }
+
+            .premium-table tr {
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+        /* Notes clear X */
+        .notes-clear {
+            position: absolute;
+            right: 12px;
+            top: 8px;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+
+            .notes-clear:hover {
+                color: #ef4444;
+            }
+
+        /* Center Toast */
+        #toastSuccess {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 1rem 1.4rem;
+            background: #16a34a;
+            color: white;
+            border-radius: 0.8rem;
+            display: none;
+            z-index: 20000;
+            min-width: 260px;
+            text-align: center;
+            font-size: 1rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        }
+
+        /* DARK MODE FIXES */
+        body.gt-theme-dark .premium-card,
+        body.gt-theme-dark .modal-content {
+            background: #1e293b !important;
+            color: white !important;
+        }
+
+        body.gt-theme-dark .premium-table th,
+        body.gt-theme-dark .premium-table td,
+        body.gt-theme-dark .modal-table th,
+        body.gt-theme-dark .modal-table td {
+            color: white !important;
+        }
+
+        body.gt-theme-dark .alert-item {
+            border-bottom: 1px solid #475569 !important;
+        }
+
+    </style>
+}
+
+<!-- Toast -->
+<div id="toastSuccess">Notes saved successfully!</div>
+
+<div class="gt-dashboard-wrapper">
+
+    <h2 class="gt-page-title mb-2">Clinician Dashboard</h2>
+    <p class="text-muted mb-2">Welcome, <strong>Krishna</strong>.</p>
+
+    <!-- Last Updated + Refresh -->
+    <div class="d-flex align-items-center mb-4" style="gap:10px;">
+        <span class="text-muted">Last Updated: @Model.LastUpdatedText</span>
+        <button class="refresh-btn-round" onclick="location.reload();">🔄</button>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3 col-sm-6">
+            <div class="kpi-card kpi-total" data-bs-toggle="modal" data-bs-target="#totalFramesModal">
+                <div class="kpi-label">Total Frames</div>
+                <div class="kpi-value">50</div>
+                <div class="kpi-chip">all-time</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="kpi-card kpi-today" data-bs-toggle="modal" data-bs-target="#todayUploadsModal">
+                <div class="kpi-label">Today's Uploads</div>
+                <div class="kpi-value">20</div>
+                <div class="kpi-chip">since midnight</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="kpi-card kpi-distinct" data-bs-toggle="modal" data-bs-target="#patientsModal">
+                <div class="kpi-label">Patients</div>
+                <div class="kpi-value">20</div>
+                <div class="kpi-chip">all patients</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="kpi-card kpi-last" data-bs-toggle="modal" data-bs-target="#lastUploadsModal">
+                <div class="kpi-label">Last Upload</div>
+                <div class="kpi-value">10</div>
+                <div class="kpi-chip">latest uploads</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Frames Overview FULL WIDTH -->
+    <div class="premium-card mb-4">
+        <div class="premium-heading">Frames Overview</div>
+        <div style="font-size:2.5rem;font-weight:700;">@TotalFramesList.Count</div>
+        <div class="text-muted">Frames analyzed</div>
+    </div>
+
+    <!-- Alerts (FULL WIDTH) -->
+    <div class="premium-card mb-4">
+        <div class="premium-heading">Alerts</div>
+
+        @foreach (var a in Model.Alerts)
+        {
+            <div class="alert-item">
+                <span class="fw-bold">@a.Title</span>
+                <span class="alert-close" onclick="this.parentElement.style.display='none'">❌</span>
+                <div class="text-muted">@a.Detail</div>
+                <div class="text-muted" style="font-size:0.8rem;">@a.When.ToString("dd-MM-yyyy HH:mm")</div>
+            </div>
+        }
+    </div>
+
+    <!-- Recent Uploads (FULL WIDTH) -->
+    <div class="premium-card mb-4">
+        <div class="d-flex justify-content-between">
+            <div class="premium-heading">Recent Uploads</div>
+            <a href="#" class="text-decoration-none small">View all patients</a>
+        </div>
+
+        <table class="premium-table mb-3">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Frames</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in TotalFramesList.Take(10))
+                {
+                    <tr>
+                        <td>@u.Name</td>
+                        <td>@u.Frames</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="d-flex" style="gap:10px;">
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadCsvModal">
+                Upload CSV
+            </button>
+
+            <a href="/Files/Sample.csv" download class="btn btn-outline-secondary btn-sm">
+                Download CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Notes FULL WIDTH -->
+    <div class="premium-card mb-4 position-relative">
+        <div class="premium-heading">Notes</div>
+
+        <span class="notes-clear"
+              onclick="document.getElementById('notesBox').value=''">❌</span>
+
+        <textarea id="notesBox" class="form-control" rows="4">@Model.Notes</textarea>
+
+        <button class="btn btn-primary btn-sm mt-3"
+                onclick="showSuccessToast()">
+            Save Notes
+        </button>
+    </div>
+
+</div>
+
+<!-- CSV Upload Modal -->
+<div class="modal fade" id="uploadCsvModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Upload CSV</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" action="/Clinician/UploadCsv">
+
+                <div class="modal-body">
+                    <label class="form-label">Choose CSV File</label>
+                    <input type="file" name="csvFile" class="form-control" accept=".csv" required />
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Upload</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- KPI MODALS -->
+@* Total Frames *@
+<div class="modal fade" id="totalFramesModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content p-3 modal-table">
+
+            <h5 class="mb-3">Total Frames (50)</h5>
+
+            <table class="table modal-table">
+                <thead>
+                    <tr><th>Name</th><th>Frames</th><th>Time</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in TotalFramesList)
+                    {
+                        <tr>
+                            <td>@i.Name</td>
+                            <td>@i.Frames</td>
+                            <td>@i.Time</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+@* Today's Uploads *@
+<div class="modal fade" id="todayUploadsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content p-3 modal-table">
+
+            <h5 class="mb-3">Today's Uploads (20)</h5>
+
+            <table class="table modal-table">
+                <thead>
+                    <tr><th>Name</th><th>Frames</th><th>Time</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in TodayUploadsList)
+                    {
+                        <tr>
+                            <td>@i.Name</td>
+                            <td>@i.Frames</td>
+                            <td>@i.Time</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+@* Patients *@
+<div class="modal fade" id="patientsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content p-3 modal-table">
+
+            <h5 class="mb-3">All Patients (20)</h5>
+
+            <table class="table modal-table">
+                <thead>
+                    <tr><th>Name</th><th>Frames</th><th>Last Upload</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in PatientsList)
+                    {
+                        <tr>
+                            <td>@i.Name</td>
+                            <td>@i.Frames</td>
+                            <td>@i.Time</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+@* Last Uploads *@
+<div class="modal fade" id="lastUploadsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content p-3 modal-table">
+
+            <h5 class="mb-3">Last Uploads (10)</h5>
+
+            <table class="table modal-table">
+                <thead>
+                    <tr><th>Name</th><th>Frames</th><th>Time</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in LastUploadsList)
+                    {
+                        <tr>
+                            <td>@i.Name</td>
+                            <td>@i.Frames</td>
+                            <td>@i.Time</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showSuccessToast() {
+            const toast = document.getElementById("toastSuccess");
+            toast.style.display = "block";
+            setTimeout(() => toast.style.display = "none", 2200);
+        }
+    </script>
+}

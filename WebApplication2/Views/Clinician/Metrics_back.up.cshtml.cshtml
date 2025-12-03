@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Metrics";
+}
+
+<div class="container mt-4">
+    <h2>Metrics</h2>
+    <p class="text-muted">Below are the recent performance metrics and readings.</p>
+
+    <div class="card mt-3 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Pressure Distribution (Last 24 hours)</h5>
+            <canvas id="metricsChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('metricsChart');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1h', '4h', '8h', '12h', '16h', '20h', '24h'],
+                datasets: [{
+                    label: 'Peak Pressure Index',
+                    data: [20, 25, 18, 30, 22, 28, 24],
+                    borderWidth: 2,
+                    borderColor: 'rgb(54, 162, 235)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    </script>
+</div>

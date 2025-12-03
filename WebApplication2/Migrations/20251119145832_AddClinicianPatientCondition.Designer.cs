@@ -12,8 +12,8 @@ using WebApplication2.Data;
 namespace WebApplication2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251030001103_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251119145832_AddClinicianPatientCondition")]
+    partial class AddClinicianPatientCondition
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,14 +33,11 @@ namespace WebApplication2.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("AlertID"));
 
-                    b.Property<bool>("Acknowledged")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("DataID")
-                        .HasColumnType("bigint");
+                    b.Property<int?>("DataID")
+                        .HasColumnType("int");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -73,6 +70,9 @@ namespace WebApplication2.Migrations
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Condition")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("ClinicianID", "PatientID");
 
                     b.HasIndex("PatientID");
@@ -91,8 +91,8 @@ namespace WebApplication2.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("DataID")
-                        .HasColumnType("bigint");
+                    b.Property<int?>("DataID")
+                        .HasColumnType("int");
 
                     b.Property<int>("PatientID")
                         .HasColumnType("int");
@@ -142,25 +142,16 @@ namespace WebApplication2.Migrations
 
             modelBuilder.Entity("WebApplication2.Models.FrameMetric", b =>
                 {
-                    b.Property<long>("MetricID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("MetricID"));
-
-                    b.Property<DateTime>("CalculatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("DataID")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("ContactAreaPct")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<long>("DataID")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("PeakPressure")
+                    b.Property<int>("PeakPressureIndex")
                         .HasColumnType("int");
 
-                    b.HasKey("MetricID");
+                    b.HasKey("DataID");
 
                     b.HasIndex("DataID")
                         .IsUnique();
@@ -198,11 +189,11 @@ namespace WebApplication2.Migrations
 
             modelBuilder.Entity("WebApplication2.Models.SensorFrame", b =>
                 {
-                    b.Property<long>("DataID")
+                    b.Property<int>("DataID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("DataID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DataID"));
 
                     b.Property<int>("PatientID")
                         .HasColumnType("int");
@@ -232,6 +223,9 @@ namespace WebApplication2.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserID"));
 
+                    b.Property<int?>("Age")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -243,6 +237,9 @@ namespace WebApplication2.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -285,13 +282,13 @@ namespace WebApplication2.Migrations
             modelBuilder.Entity("WebApplication2.Models.ClinicianPatient", b =>
                 {
                     b.HasOne("WebApplication2.Models.User", "Clinician")
-                        .WithMany("ClinicianLinks")
+                        .WithMany()
                         .HasForeignKey("ClinicianID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("WebApplication2.Models.User", "Patient")
-                        .WithMany("PatientLinks")
+                        .WithMany()
                         .HasForeignKey("PatientID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -378,13 +375,6 @@ namespace WebApplication2.Migrations
             modelBuilder.Entity("WebApplication2.Models.SensorFrame", b =>
                 {
                     b.Navigation("Metric");
-                });
-
-            modelBuilder.Entity("WebApplication2.Models.User", b =>
-                {
-                    b.Navigation("ClinicianLinks");
-
-                    b.Navigation("PatientLinks");
                 });
 #pragma warning restore 612, 618
         }
