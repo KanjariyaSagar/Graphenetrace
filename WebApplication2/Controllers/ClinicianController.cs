@@ -17,9 +17,9 @@ namespace WebApplication2.Controllers
             
         }
 
-        // --------------------------------------------------------------
-        //  STATIC DUMMY DATA – NO DATABASE
-        // --------------------------------------------------------------
+        
+        //  STATIC  DATA – NO DATABASE
+        
         private static readonly List<PatientRowVM> SamplePatients = new()
         {
            new PatientRowVM
@@ -489,9 +489,9 @@ namespace WebApplication2.Controllers
             }
         };
 
-        // --------------------------------------------------------------
+       
         //  DASHBOARD
-        // --------------------------------------------------------------
+        
         public IActionResult Dashboard()
         {
             var dashboardModel = new ClinicianDashboardVM
@@ -533,9 +533,9 @@ namespace WebApplication2.Controllers
             return View(dashboardModel);
         }
 
-        // --------------------------------------------------------------
+        
         //  METRICS
-        // --------------------------------------------------------------
+        
         [HttpGet]
         public IActionResult Metrics(DateTime? fromDate, DateTime? toDate, string? selectedMetric)
         {
@@ -569,9 +569,8 @@ namespace WebApplication2.Controllers
             return View(model);
         }
 
-        // --------------------------------------------------------------
         //  PATIENTS
-        // --------------------------------------------------------------
+        
         [HttpGet]
         public IActionResult Patients(string? search)
         {
@@ -600,9 +599,8 @@ namespace WebApplication2.Controllers
             return View(model);
         }
 
-        // --------------------------------------------------------------
         //  GENERATE PATIENT PDF
-        // --------------------------------------------------------------
+        
         public IActionResult GeneratePatientPdf(int id)
         {
             var patient = SamplePatients.FirstOrDefault(x => x.PatientId == id);
@@ -624,9 +622,9 @@ namespace WebApplication2.Controllers
             return File(pdfBytes, "application/pdf", $"PatientReport_{safeName}.pdf");
         }
 
-        // --------------------------------------------------------------
+        
         //  ALERTS
-        // --------------------------------------------------------------
+        
         [HttpGet]
         public IActionResult Alerts(string? severity = "all")
         {
@@ -653,9 +651,9 @@ namespace WebApplication2.Controllers
             return View(model);
         }
 
-        // --------------------------------------------------------------
+       
         //  COMMENTS
-        // --------------------------------------------------------------
+      
         [HttpGet]
         public IActionResult Comments(string? category = "all")
         {

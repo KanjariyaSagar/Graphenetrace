@@ -11,7 +11,7 @@ namespace WebApplication2.Models
 
         public int PatientID { get; set; }
 
-        // 👇 MUST MATCH SensorFrame.DataID (which is int)
+        // MUST MATCH SensorFrame.DataID (which is int)
         public int? DataID { get; set; }
 
         [Required]

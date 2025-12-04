@@ -6,7 +6,7 @@ namespace WebApplication2.Models.ViewModels
     {
         public int PatientId { get; set; }
 
-        // BACKWARD COMPATIBILITY (Old code may use these)
+        // BACKWARD COMPATIBILITY 
         public int? Id { get; set; }
         public string? NHSNumber { get; set; }
 

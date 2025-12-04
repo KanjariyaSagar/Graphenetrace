@@ -6,7 +6,7 @@ namespace WebApplication2.Controllers
     {
         public IActionResult Logout()
         {
-            // TODO: Clear auth/session if you use Identity
+            //  Clear auth/session if you use Identity
             return RedirectToAction("Dashboard", "Clinician");
         }
     }

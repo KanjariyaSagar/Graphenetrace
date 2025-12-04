@@ -12,7 +12,7 @@ namespace WebApplication2.Models.ViewModels
         public string Name { get; set; } = string.Empty;
 
         // Patient details
-        public int Age { get; set; }             // we temporarily set Age = 0 in controller
+        public int Age { get; set; }             //  temporarily set Age = 0 in controller
         public string Gender { get; set; } = ""; // temporarily empty
 
         // Medical condition

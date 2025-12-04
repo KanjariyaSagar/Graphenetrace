@@ -6,7 +6,7 @@ namespace WebApplication2.Models
     {
         public int Id { get; set; }
 
-        // e.g. 2025-11-16 (one row per day)
+        
         public DateTime Date { get; set; }
 
         // Daily summary for that day

@@ -8,12 +8,12 @@ namespace WebApplication2.Models
     public class Comment
     {
         [Key]
-        public long CommentID { get; set; }      // this is fine – it's not the problem
+        public long CommentID { get; set; }     
 
         public int PatientID { get; set; }
 
-        // 👇 CHANGE THIS LINE
-        public int? DataID { get; set; }         // must match SensorFrame.DataID (int)
+        
+        public int? DataID { get; set; }         
 
         [Required]
         public string Text { get; set; } = default!;
