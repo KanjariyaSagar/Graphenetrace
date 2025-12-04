@@ -52,7 +52,7 @@ namespace WebApplication2.Data
             db.Users.AddRange(clinician, mary, alex, james);
             db.SaveChanges();
 
-            // Grab generated IDs
+            //  generated IDs
             var clinicianId = clinician.UserID;
             var maryId = mary.UserID;
             var alexId = alex.UserID;
